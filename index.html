@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherSphere Pro ☀️</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="glass-card">
+            <div class="search-box">
+                <input type="text" id="cityInput" placeholder="Enter city name">
+                <button id="searchBtn"><i class="fas fa-search"></i></button>
+                <button id="locationBtn"><i class="fas fa-location-arrow"></i></button>
+            </div>
+
+            <div class="weather-display">
+                <div class="main-info">
+                    <h2 id="cityName">--</h2>
+                    <div class="temp-container">
+                        <span id="temperature">--</span>
+                        <button id="unitToggle">°C</button>
+                    </div>
+                    <p id="weatherDesc">--</p>
+                </div>
+                <div class="weather-icon" id="weatherIcon">
+                    <i class="fas fa-cloud"></i>
+                </div>
+            </div>
+
+            <div class="weather-details">
+                <div class="detail-item">
+                    <i class="fas fa-tint"></i>
+                    <span id="humidity">--%</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-wind"></i>
+                    <span id="windSpeed">-- km/h</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-temperature-low"></i>
+                    <span id="feelsLike">--°</span>
+                </div>
+            </div>
+        </div>
+
+        <button id="themeToggle" class="theme-btn"><i class="fas fa-moon"></i></button>
+        <footer class="credit">Project by <a href="https://github.com/BAPUx03" target="_blank">BAPUx03</a></footer>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
