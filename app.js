@@ -15,45 +15,76 @@ const humidity = document.getElementById('humidity');
 const windSpeed = document.getElementById('windSpeed');
 const feelsLike = document.getElementById('feelsLike');
 const themeToggle = document.getElementById('themeToggle');
+const datetimeBtn = document.getElementById('datetimeBtn');
+const datetimePage = document.getElementById('datetimePage');
+const liveTime = document.getElementById('liveTime');
+const liveDate = document.getElementById('liveDate');
+const closeDatetime = document.getElementById('closeDatetime');
+const errorModal = document.getElementById('errorModal');
+const errorMessage = document.getElementById('errorMessage');
+const errorClose = document.getElementById('errorClose');
 
 // State
 let currentUnit = 'celsius';
 let currentData = null;
+let timeInterval;
 
 // Initialize
 fetchWeather('London');
+startClock();
 
 // Event Listeners
-searchBtn.addEventListener('click', () => {
-    if(cityInput.value.trim()) {
-        fetchWeather(cityInput.value.trim());
-    }
-});
+searchBtn.addEventListener('click', searchWeather);
+cityInput.addEventListener('keypress', (e) => e.key === 'Enter' && searchWeather());
+locationBtn.addEventListener('click', getLocationWeather);
+unitToggle.addEventListener('click', toggleUnit);
+themeToggle.addEventListener('click', toggleTheme);
+datetimeBtn.addEventListener('click', showDatetimePage);
+closeDatetime.addEventListener('click', hideDatetimePage);
+errorClose.addEventListener('click', () => errorModal.style.display = 'none');
 
-cityInput.addEventListener('keypress', (e) => {
-    if(e.key === 'Enter' && cityInput.value.trim()) {
-        fetchWeather(cityInput.value.trim());
-    }
-});
+// Functions
+function searchWeather() {
+    const city = cityInput.value.trim();
+    if (city) fetchWeather(city);
+}
 
-locationBtn.addEventListener('click', () => {
-    if(navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-            fetchWeatherByCoords(position.coords.latitude, position.coords.longitude);
-        }, showError);
+function getLocationWeather() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            position => fetchWeatherByCoords(position.coords.latitude, position.coords.longitude),
+            (error) => showLocationError(error)
+        );
     } else {
         showError("Geolocation is not supported by your browser");
     }
-});
+}
 
-unitToggle.addEventListener('click', toggleUnit);
-themeToggle.addEventListener('click', toggleTheme);
+function showLocationError(error) {
+    let message = "Could not get your current location";
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            message = "Location access was denied. Please enable permissions.";
+            break;
+        case error.POSITION_UNAVAILABLE:
+            message = "Location information is unavailable.";
+            break;
+        case error.TIMEOUT:
+            message = "The request to get location timed out.";
+            break;
+    }
+    showError(message);
+}
 
-// API Functions
+function showError(message) {
+    errorMessage.textContent = message;
+    errorModal.style.display = 'flex';
+}
+
 async function fetchWeather(city) {
     try {
         const response = await fetch(`${BASE_URL}?q=${city}&units=metric&appid=${API_KEY}`);
-        if(!response.ok) throw new Error('City not found');
+        if (!response.ok) throw new Error('City not found');
         const data = await response.json();
         currentData = data;
         updateUI(data);
@@ -81,7 +112,7 @@ function updateUI(data) {
     windSpeed.textContent = `${data.wind.speed} m/s`;
     feelsLike.textContent = `${Math.round(data.main.feels_like)}°`;
     updateWeatherIcon(data.weather[0].main);
-    updateBackground(data.weather[0].main);
+    updateBackground(data.weather[0].main.toLowerCase());
 }
 
 function updateWeatherIcon(condition) {
@@ -92,34 +123,31 @@ function updateWeatherIcon(condition) {
         'Thunderstorm': 'fa-bolt',
         'Snow': 'fa-snowflake',
         'Mist': 'fa-smog',
-        'Drizzle': 'fa-cloud-rain',
-        'Fog': 'fa-smog'
+        'Drizzle': 'fa-cloud-rain'
     };
-    
     weatherIcon.innerHTML = `<i class="fas ${iconMap[condition] || 'fa-cloud'}"></i>`;
 }
 
 function updateBackground(condition) {
-    document.body.className = '';
-    document.body.classList.add(condition.toLowerCase());
+    document.body.className = condition + '-bg';
 }
 
 function toggleUnit() {
-    if(currentData) {
-        currentUnit = currentUnit === 'celsius' ? 'fahrenheit' : 'celsius';
-        unitToggle.textContent = currentUnit === 'celsius' ? '°C' : '°F';
-        
-        const temp = currentData.main.temp;
-        const feelsTemp = currentData.main.feels_like;
-        
-        temperature.textContent = Math.round(
-            currentUnit === 'celsius' ? temp : (temp * 9/5) + 32
-        );
-        
-        feelsLike.textContent = `${Math.round(
-            currentUnit === 'celsius' ? feelsTemp : (feelsTemp * 9/5) + 32
-        )}°`;
-    }
+    if (!currentData) return;
+    
+    currentUnit = currentUnit === 'celsius' ? 'fahrenheit' : 'celsius';
+    unitToggle.textContent = currentUnit === 'celsius' ? '°C' : '°F';
+    
+    const temp = currentData.main.temp;
+    const feelsTemp = currentData.main.feels_like;
+    
+    temperature.textContent = Math.round(
+        currentUnit === 'celsius' ? temp : (temp * 9/5) + 32
+    );
+    
+    feelsLike.textContent = `${Math.round(
+        currentUnit === 'celsius' ? feelsTemp : (feelsTemp * 9/5) + 32
+    )}°`;
 }
 
 function toggleTheme() {
@@ -128,6 +156,30 @@ function toggleTheme() {
     themeToggle.querySelector('i').classList.toggle('fa-moon');
 }
 
-function showError(message) {
-    alert(`Error: ${message}`);
+function showDatetimePage() {
+    datetimePage.style.display = 'flex';
+    document.getElementById('weatherPage').style.display = 'none';
+}
+
+function hideDatetimePage() {
+    datetimePage.style.display = 'none';
+    document.getElementById('weatherPage').style.display = 'block';
+}
+
+function startClock() {
+    updateClock();
+    timeInterval = setInterval(updateClock, 1000);
+}
+
+function updateClock() {
+    const now = new Date();
+    const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    };
+    
+    liveTime.textContent = now.toLocaleTimeString();
+    liveDate.textContent = now.toLocaleDateString('en-US', options);
 }
