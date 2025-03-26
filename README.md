@@ -6,7 +6,7 @@
 
 A premium weather application with real-time forecasts and stunning UI.
 
-![WeatherSphere Pro Screenshot](./assets/screenshot.png)
+![WeatherSphere Pro Screenshot](https://github.com/user-attachments/assets/23690fa8-bb2d-4360-a234-423aa6d5383d)
 
 ## ✨ Features
 
